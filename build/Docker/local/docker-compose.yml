@@ -1,0 +1,50 @@
+version: '3.7'
+services:
+    # backend:
+    #     build:
+    #         context: ../../../
+    #         dockerfile: ./Dockerfile
+    #     ports:
+    #         - ${BACKEND_PORT}:3000
+    #     volumes:
+    #         - /usr/src/app
+    #     environment:
+    #         DB_HOST: ${POSTGRES_HOST}
+    #         DB_PORT: ${POSTGRES_PORT}
+    #         DB_NAME: ${POSTGRES_DB}
+    #         DB_USERNAME: ${POSTGRES_USER}
+    #         DB_PASSWORD: ${POSTGRES_PASSWORD}
+    #     depends_on:
+    #         - postgres
+    #     links:
+    #         - postgres
+    #     networks:
+    #         - beevo_network
+    postgres:
+        image: postgres:16.1
+        container_name: postgres
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            PGDATA: /var/lib/postgresql/data
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - ${POSTGRES_PORT}:5432
+        command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all -c pg_stat_statements.max=100000 -c max_connections=200
+        networks:
+            - beevo_network
+    redis:
+        image: redis:7.0.3
+        container_name: redis
+        ports:
+            - ${REDIS_PORT}:6379
+        networks:
+            - beevo_network
+volumes:
+    postgres_data:
+        driver: local
+networks:
+    beevo_network:
+        driver: bridge
